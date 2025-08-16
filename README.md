@@ -2,7 +2,7 @@
 
 ### Introduction
 
-The repository is the implementation of the **FINALLY** speech enhancement model, designed to improve audio quality to **studio-like standards**. It provides fast and universal enhancement across a variety of speech recordings.
+The repository is the unofficial implementation of the **FINALLY** speech enhancement model, designed to improve audio quality to **studio-like standards**. It provides fast and universal enhancement across a variety of speech recordings.
 
 ### Paper
 
