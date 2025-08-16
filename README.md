@@ -29,6 +29,25 @@ pip install -r requirements.txt
 
 Download the **WavLM-Large** model from [Hugging Face](https://huggingface.co/microsoft/wavlm-large) and place it in the `wavlm/` directory.
 
+### Model Size
+
+Trainable parameters per component (in millions):
+
+| Component            | Parameters (M) |
+|----------------------|----------------|
+| spectralunet         | 4.4            |
+| resblock             | 7.1            |
+| conv                 | 0.8            |
+| hifi                 | 15.5           |
+| waveunet             | 10.8           |
+| spectralmasknet      | 5.5            |
+| waveunet_upsampler   | 3.9            |
+
+- **Total trainable parameters:** 48.0 M  
+- **Non-trainable WavLM parameters:** 315.5 M  
+- **Total number of parameters (including WavLM):** 363.5 M  
+
+
 ### Data
 
 The `data/` directory contains some dummy audio data for testing and training.
@@ -78,3 +97,4 @@ python inference.py --input_wavs_dir data/test_data \
 
 * Ensure the `checkpoint_file` exists before running inference.
 * Recommended input formats: WAV files sampled at 16kHz.
+
