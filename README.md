@@ -1,4 +1,4 @@
-# "FINALLY: fast and universal speech enhancement with studio-like quality" Implementation
+# Unofficial Implementation of "FINALLY: fast and universal speech enhancement with studio-like quality"
 
 ## Introduction
 
@@ -24,6 +24,14 @@ conda activate finally_env
 ```bash
 pip install -r requirements.txt
 ```
+
+Here’s a concise **“Pretrained Models”** section you can add to your README:
+
+---
+
+## Pretrained Models
+
+Download the **WavLM-Large** model from [Hugging Face](https://huggingface.co/microsoft/wavlm-large) and place it in the `wavlm/` directory.
 
 ## Training
 
