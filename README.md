@@ -29,6 +29,33 @@ pip install -r requirements.txt
 
 Download the **WavLM-Large** model from [Hugging Face](https://huggingface.co/microsoft/wavlm-large) and place it in the `wavlm/` directory.
 
+### Data
+
+The `data/` directory contains some dummy audio data for testing and training.
+
+#### Stage 1
+
+`data/stage_1/` contains:
+
+- `clean/` – 18 audio files, 2 seconds each at 16 kHz  
+- `noisy/` – 18 audio files, 2 seconds each at 16 kHz  
+- `training.txt` – lists the filenames of the audio files  
+
+The clean and noisy directories have **matching filenames**.
+
+#### Stage 2
+
+`data/stage_2/` contains the **same structure and data** as `stage_1`.
+
+#### Stage 3
+
+`data/stage_3/` contains:
+
+- `noisy/` – 18 audio files, 2 seconds each at 16 kHz  
+- `clean/` – 18 audio files, 48 kHz  
+- `training.txt` – lists the filenames of the audio files 
+
+
 ### Training
 
 To train the model on your dataset:
