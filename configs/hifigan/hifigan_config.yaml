@@ -1,0 +1,91 @@
+exp:
+    project_name: # your project name
+    exp_dir: experiment
+    device: cuda
+    seed: 1234
+    use_wandb: true
+    log_batch_size: 5
+    
+mel:
+    segment_size: 8192
+    num_mels: 80
+    n_fft: 1024
+    hop_size: 256
+    win_size: 1024
+    in_sr: 16000
+    fmin: 0
+    fmax: 8000
+    fmax_for_loss: null
+
+data:
+    dataset: mel_dataset
+    dataset_args: {}
+    trainval_data_root: # "/VCTK24"
+    train_data_file_path: "datasets/splits/VCTK_split/train_files.txt"
+    val_data_file_path: "datasets/splits/VCTK_split/val_files.txt"
+    inference_data_root: # "/VCTK24"
+    inference_data_file_path: "datasets/splits/VCTK_split/val_files.txt"
+    train_batch_size: 32
+    workers: 16
+
+train:
+    trainer: hifigan_trainer
+    val_metrics: ["l1_mel_diff"]
+    start_step: 1
+    steps: 80000
+    log_step: 250
+    checkpoint_step: 10000
+    val_step: 500
+
+inference:
+    trainer: hifigan_trainer
+    metrics: ["l1_mel_diff"]
+
+default_model:
+    optimizer:
+        name: adamW
+        args:
+            lr: 0.0002
+            beta1: 0.8
+            beta2: 0.99
+
+    scheduler:
+        name: exponential
+        args:
+            gamma: 0.999
+            reduce_time: "epoch"
+
+models:
+    hifigan_gen:
+        inherit: default_model
+        checkpoint_path: null
+        args:
+            resblock: "1"
+            upsample_rates: [8,8,2,2]
+            upsample_kernel_sizes: [16,16,4,4]
+            upsample_initial_channel: 128
+            resblock_kernel_sizes: [3,7,11]
+            resblock_dilation_sizes: [[1,3,5], [1,3,5], [1,3,5]]
+        losses:
+            l1_mel_loss:
+                coef: 45.0
+            gen_loss:
+                coef: 1.0
+            feature_loss:
+                coef: 2.0
+            
+    mpd:
+        inherit: default_model
+        checkpoint_path: null
+        args: {}
+        losses:
+            disc_loss:
+                coef: 1.0       
+    
+    msd:
+        inherit: default_model
+        checkpoint_path: null
+        args: {}
+        losses:
+            disc_loss:
+                coef: 1.0

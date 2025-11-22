@@ -1,0 +1,138 @@
+exp:
+  project_name: FINALLY
+  exp_dir: experiment
+  device: cuda:1
+  seed: 1234
+mel:
+  segment_size: 49152
+  num_mels: 80
+  n_fft: 1024
+  hop_size: 256
+  win_size: 1024
+  in_sr: 16000
+  out_sr: 48000
+  fmin: 0
+  fmax: 8000
+  fmax_for_loss: null
+data:
+  train_dataset: augmented_libritts-r3
+  train_dataset_args:
+    augs_conf:
+    - name: noise
+      args:
+        root: datasets/DNS_noise/datasets_fullband/noise_fullband
+        noise_files_path:
+          train: datasets/metadata/DNS_noise/train_files.txt
+          val: datasets/metadata/DNS_noise/val_files.txt
+        prob: 1.0
+    - name: wind-noise
+      args:
+        root: datasets/wind_noise
+        noise_files_path:
+          train: datasets/metadata/wind_noise/wind_noise_train_list.txt
+          val: datasets/metadata/wind_noise/wind_noise_val_list.txt
+        prob: 0.05
+        
+    - name: impulse_response
+      args:
+        root: datasets/micro_ir
+        ir_files_path:
+          train: datasets/metadata/micro_ir/train_files.txt
+          val: datasets/metadata/micro_ir/val_files.txt
+    - name: impulse_response
+      args:
+        root: datasets/DNS_ir/datasets_fullband/impulse_responses/SLR26/simulated_rirs_48k
+        ir_files_path:
+          train: datasets/metadata/DNS_ir/train_files.txt
+          val: datasets/metadata/DNS_ir/val_files.txt
+        prob: 0.8
+    - name: acrusher
+      args:
+        prob: 0.25
+    - name: crystalizer
+      args:
+        prob: 0.4
+    - name: flanger
+      args:
+        prob: 0.15
+    - name: vibrato
+      args:
+        prob: 0.15
+    - name: codec
+      args:
+        prob: 0.45
+    - name: bandwidth_limitation
+      args:
+        prob: 0.10
+
+  train_data_root: /home/ml/Data/Data_48K/small_train_data
+  train_data_file_path: /home/ml/Data/Data_48K/small_train_data_filenames.txt
+
+  val_dataset: stage3-val
+  val_dataset_args:
+    clean_wavs_dir: small_train_data
+    noisy_wavs_dir: small_train_data
+  val_data_root: /home/ml/Data/Data_48K/
+  val_data_file_path: /home/ml/Data/Data_48K/small_train_data_filenames.txt
+  train_batch_size: 4
+  workers: 0
+
+train:
+  trainer: finally_trainer
+  trainer_args:
+    sub_batch_size: 4
+  val_metrics: ["utmos", "dnsmos", "wv-mos", "wb_pesq", "stoi"]
+  start_step: 1
+  steps: 400000
+  log_step: 2000
+  checkpoint_step: 500
+  val_step: 500
+models:
+  finally_gen:
+    optimizer:
+      name: adamW
+      args:
+        lr: 0.0002
+        beta1: 0.8
+        beta2: 0.99
+    scheduler:
+      name: exponential
+      args:
+        gamma: 0.995
+        reduce_time: period
+        step_period: 200
+        warmup_steps: 2000
+    checkpoint_path: experiment/checkpoints/stage2_norm/finally_gen/finally_gen_checkpoint_54000_stage2_norm.pth
+    load_optimizer_from_checkpoint: false
+    args:
+      use_upsamplewaveunet: true
+    losses:
+      lmos:
+        coef: 0.5
+      gen_loss:
+        coef: 5
+      feature_loss:
+        coef: 15.0
+      utmos:
+        coef: 20
+      pesq:
+        coef: 2
+  ms-stft_disc:
+    optimizer:
+      name: adamW
+      args:
+        lr: 0.0002
+        beta1: 0.5
+        beta2: 0.999
+    scheduler:
+      name: exponential
+      args:
+        gamma: 0.995
+        reduce_time: period
+        step_period: 200
+    checkpoint_path: false
+    args:
+      filters: 64
+    losses:
+      disc_loss:
+        coef: 1.0

@@ -1,0 +1,78 @@
+exp:
+    project_name: # your project name
+    exp_dir: experiment
+    device: cuda
+    seed: 1234
+
+mel:
+    segment_size: 8192
+    num_mels: 80
+    n_fft: 1024
+    hop_size: 256
+    win_size: 1024
+    in_sr: 16000
+    fmin: 0
+    fmax: 8000
+    fmax_for_loss: null
+
+data:
+    dataset: vctk
+    dataset_args:
+        input_freq: 1000
+        lowpass: "random"
+    trainval_data_root: # "/VCTK16"
+    train_data_file_path: "datasets/splits/VCTK_split/train_files.txt"
+    val_data_file_path: "datasets/splits/VCTK_split/val_files.txt"
+    inference_data_root: # "/VCTK16"
+    inference_data_file_path: "datasets/splits/VCTK_split/val_files.txt"
+    train_batch_size: 32
+    workers: 16
+
+train:
+    trainer: hifi++_trainer
+    val_metrics: ["wb_pesq", "stoi", "si_sdr", "mosnet"]
+    start_step: 1
+    steps: 80000
+    log_step: 250
+    checkpoint_step: 10000
+    val_step: 500
+
+inference:
+    trainer: hifi++_trainer
+    metrics: ["wb_pesq", "stoi", "si_sdr", "mosnet"]
+
+default_model:
+    optimizer:
+        name: adamW
+        args:
+            lr: 0.0002
+            beta1: 0.8
+            beta2: 0.99
+
+    scheduler:
+        name: exponential
+        args:
+            gamma: 0.999
+            reduce_time: "epoch"
+
+models:
+    a2a_hifi++_gen:
+        inherit: default_model
+        checkpoint_path: null
+        args: {}
+        losses:
+            l1_mel_loss:
+                coef: 45.0
+            gen_loss:
+                coef: 1.0
+            feature_loss:
+                coef: 2.0   
+    
+    msd:
+        inherit: default_model
+        checkpoint_path: null
+        args:
+            same_scale: true
+        losses:
+            disc_loss:
+                coef: 1.0

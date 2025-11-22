@@ -1,0 +1,248 @@
+{
+    "type": "object",
+    "properties": {
+        "exp": {
+            "type": "object",
+            "description": "Experiment configuration.",
+            "properties": {
+                "project_name": {
+                    "type": "string",
+                    "description": "Name of the project."
+                },
+                "device": {
+                    "type": "string",
+                    "description": "Device to use (e.g., 'cuda', 'cpu')."
+                },
+                "seed": {
+                    "type": "integer",
+                    "description": "Random seed."
+                }
+            }
+        },
+        "mel": {
+            "type": "object",
+            "description": "Some staff about audio processing.",
+            "properties": {
+                "segment_size": {
+                    "type": "integer",
+                    "description": "Segment size of audio."
+                },
+                "num_mels": {
+                    "type": "integer",
+                    "description": "Number of mel bands."
+                },
+                "n_fft": {
+                    "type": "integer",
+                    "description": "FFT size."
+                },
+                "hop_size": {
+                    "type": "integer",
+                    "description": "Hop size."
+                },
+                "win_size": {
+                    "type": "integer",
+                    "description": "Window size."
+                },
+                "in_sr": {
+                    "type": "integer",
+                    "description": "Input sampling rate."
+                },
+                "out_sr": {
+                    "type": "integer",
+                    "description": "Output sampling rate."
+                },
+                "fmin": {
+                    "type": "integer",
+                    "description": "Minimum frequency."
+                },
+                "fmax": {
+                    "type": "integer",
+                    "description": "Maximum frequency."
+                },
+                "fmax_for_loss": {
+                    "type": ["integer", "null"],
+                    "description": "Max frequency for loss calculation."
+                }
+            }
+        },
+        "data": {
+            "type": "object",
+            "description": "Data configuration.",
+            "properties": {
+                "dataset": {
+                    "type": "string",
+                    "description": "Dataset name for training or inference. All datasets registered in datasets_registry."
+                },
+                "dataset_args": {
+                    "type": "object",
+                    "description": "Arguments for dataset instantiation."
+                },
+                "train_data_root": {
+                    "type": "string",
+                    "description": "Path to training data root."
+                },
+                "train_data_file_path": {
+                    "type": "string",
+                    "description": "Path to training data file list."
+                },
+                "val_dataset": {
+                    "type": "string",
+                    "description": "Validation dataset name. All datasets registered in datasets_registry."
+                },
+                "val_dataset_args": {
+                    "type": "object",
+                    "description": "Arguments for validation dataset."
+                },
+                "val_data_root": {
+                    "type": "string",
+                    "description": "Path to validation data root."
+                },
+                "val_data_file_path": {
+                    "type": "string",
+                    "description": "Path to validation data file list."
+                },
+
+                "inference_data_root": {
+                    "type": "string",
+                    "description": "Root directory for inference data."
+                },
+                "inference_data_file_path": {
+                    "type": "string",
+                    "description": "File path for inference metadata."
+                },
+                "train_batch_size": {
+                    "type": "integer",
+                    "description": "Training batch size."
+                },
+                "workers": {
+                    "type": "integer",
+                    "description": "Number of data loading workers."
+                }
+            }
+        },
+        "inference": {
+            "type": "object",
+            "properties": {
+                "save_samples":{
+                    "type": "boolean",
+                    "description": "Whether to save audio samples during inference."
+                },
+                "trainer": {
+                    "type": "string",
+                    "description": "Name of the trainer to use for inference. All trainers registered in trainers_registry."
+                },
+                "metrics": {
+                    "type": "array",
+                    "description": "List of metrics to evaluate during inference. All metrics registered in metrics_registry.",
+                    "items": { 
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "train": {
+            "type": "object",
+            "properties": {
+                "trainer": {
+                    "type": "string",
+                    "description": "Name of the trainer to use for training. All trainers registered in trainers_registry."
+                },
+                "trainer_args": {
+                    "type": "object",
+                    "description": "Some trainers require args.",
+                    "required": []
+                },
+                "val_metrics": {
+                    "type": "array",
+                    "description": "Validation metrics to compute during training. All metrics registered in metrics_registry.",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "start_step": {
+                    "type": "integer",
+                    "description": "Starting step number for training."
+                },
+                "steps": {
+                    "type": "integer",
+                    "description": "Total number of training steps."
+                },
+                "log_step": {
+                    "type": "integer",
+                    "description": "Interval of steps to log training info."
+                },
+                "checkpoint_step": {
+                    "type": "integer",
+                    "description": "Interval of steps to save checkpoints."
+                },
+                "val_step": {
+                    "type": "integer",
+                    "description": "Interval of steps to perform validation."
+                }
+            }
+        },
+        "models": {
+            "type": "object",
+            "description": "Model configuration dictionary with optimizers, schedulers, args and losses for each model.",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "optimizer": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Optimizer name, e.g., adamW. All optimizers registered in optimizers_registry."},
+                            "args": {
+                                "type": "object",
+                                "description": "Arguments to be passed to the optimizer."
+                            }
+                        }
+                    },
+                    "scheduler": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Scheduler name. All schedulers registered in schedulers_registry."
+                            },
+                            "args": {
+                                "type": "object",
+                                "description": "Scheduler parameters including warmup."
+                            }
+                        }
+                    },
+                    "checkpoint_path": {
+                        "type": ["string", "null"],
+                        "description": "Path to checkpoint file."
+                    },
+                    "load_optimizer_from_checkpoint": {
+                        "type": "boolean",
+                        "description": "Flag to load optimizer state from checkpoint (if any)."
+                    },
+                    "args": {
+                        "type": "object",
+                        "description": "Model-specific arguments."
+                    },
+                    "losses": {
+                        "type": "object",
+                        "description": "Loss configuration with names and coefficients.",
+                        "Loss name. All losses registered in losses registry.": {
+                            "type": "object",
+                            "properties": {
+                                "coef": {
+                                    "type": "number",
+                                    "description": "Coefficient for the given loss component."
+                                },
+                                "args": {
+                                    "type": "object",
+                                    "description": "Additional arguments for loss initializing."
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,158 @@
+exp:
+    project_name: FINALLY
+    exp_dir: experiment
+    device: cuda:1
+    seed: 1234
+    
+mel:
+    segment_size: 8192
+    num_mels: 80
+    n_fft: 1024
+    hop_size: 256
+    win_size: 1024
+    in_sr: 16000
+    out_sr: 16000
+    fmin: 0
+    fmax: 8000
+    fmax_for_loss: null
+
+data:
+    train_dataset: augmented_libritts-r
+    train_dataset_args:
+        augs_conf:
+          - name: noise
+            args:
+              root: datasets/DNS_noise/datasets_fullband/noise_fullband # dns noise dataset root directory
+              noise_files_path:
+                train: "datasets/metadata/DNS_noise/train_files.txt"
+                val: "datasets/metadata/DNS_noise/val_files.txt"
+
+          - name: impulse_response
+            args:
+              root: datasets/micro_ir # micro impulse responses dataset root directory
+              ir_files_path:
+                train: "datasets/metadata/micro_ir/train_files.txt"
+                val: "datasets/metadata/micro_ir/val_files.txt"
+
+          - name: impulse_response
+            args:
+              root: datasets/DNS_ir/datasets_fullband/impulse_responses/SLR26/simulated_rirs_48k # dns room impulse responses dataset root directory
+              ir_files_path:
+                train: "datasets/metadata/DNS_ir/train_files.txt"
+                val: "datasets/metadata/DNS_ir/val_files.txt"
+              prob: 0.8
+
+          - name: acrusher
+            args:
+              prob: 0.25
+
+          - name: crystalizer
+            args:
+              prob: 0.4
+
+          - name: vibrato
+            args:
+              prob: 0.15
+
+          - name: flanger
+            args:
+              prob: 0.15
+
+          - name: codec
+            args:
+              prob: 0.45
+
+          - name: clipping
+            args:
+              prob: 0.40
+
+          - name: packet_loss
+            args:
+              prob: 0.15
+
+          # - name: bandwidth_limitation
+          #   args:
+          #     prob: 0.25
+
+    # train_data_root: ../../Data/Data_48K # LibriTTS-R dataset root directory
+    # train_data_file_path: "../../Data/Data_48K/filenames.txt"
+    # train_data_root: ../../Data/urgent_clean_data_melband
+    # train_data_file_path: ../../Data/urgent_clean_data_melband/urgent_clean_stage1_filenames.txt
+    # Urgent 2500 hour data
+    train_data_root: /home/ml/Data/Urgent_Data/eng_ger_fre_spa_2500H/data # daps dataset root directory 
+    train_data_file_path: "/home/ml/Data/Urgent_Data/eng_ger_fre_spa_2500H/filenames.txt"
+
+    val_dataset: vctk-demand
+    val_dataset_args:
+        clean_wavs_dir: "clean_testset_wav"
+        noisy_wavs_dir: "noisy_testset_wav"
+    val_data_root: datasets/VCTK-Demand # vctk-demand dataset root directory
+    val_data_file_path: "datasets/metadata/VCTK-Demand/files.txt"
+
+    train_batch_size: 32
+    workers: 8
+
+train:
+    trainer: finally_trainer
+    val_metrics: ["utmos", "dnsmos", "vcr"]
+    start_step: 1
+    steps: 900000
+    log_step: 2000
+    checkpoint_step: 2000
+    val_step: 2000
+
+models:
+    finally_gen:
+        optimizer:
+          name: adamW
+          args:
+              lr: 0.0002
+              beta1: 0.8
+              beta2: 0.99
+
+        scheduler:
+            name: exponential
+            args:
+                gamma: 0.995
+                reduce_time: "period"
+                step_period: 600
+                warmup_curve: "linear"
+                warmup_steps: 2000
+
+        checkpoint_path: experiment/checkpoints/stage1_2500H_urgent_data_urgent_aug/finally_gen/finally_gen_checkpoint_245000_stage1_2500H_urgent_data_urgent_aug.pth
+        load_optimizer_from_checkpoint: false
+        
+        args: {}
+        losses:
+            lmos:
+              coef: 20.0
+            gen_loss:
+              coef: 0.4
+            feature_loss:
+              coef: 20.0
+    
+    ms-stft_disc:
+      optimizer:
+          name: adamW
+          args:
+              lr: 0.0002111
+              beta1: 0.5
+              beta2: 0.999
+
+      scheduler:
+          name: exponential
+          args:
+              gamma: 0.995
+              reduce_time: "period"
+              step_period: 200
+
+      checkpoint_path: null
+      args:
+          filters: 64
+          n_ffts: [2048, 1024, 512, 256, 128]
+          hop_lengths: [512, 256, 128, 64, 32]
+          win_lengths: [2048, 1024, 512, 256, 128]
+      losses:
+          disc_loss:
+            coef: 1.0
+    

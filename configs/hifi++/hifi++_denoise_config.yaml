@@ -1,0 +1,78 @@
+exp:
+    project_name: # your project name
+    exp_dir: experiment
+    device: cuda
+    seed: 1234
+
+mel:
+    segment_size: 8192
+    num_mels: 80
+    n_fft: 1024
+    hop_size: 256
+    win_size: 1024
+    in_sr: 16000
+    fmin: 0
+    fmax: 8000
+    fmax_for_loss: null
+
+data:
+    dataset: voicebank
+    dataset_args:
+        clean_wavs_dir: "clean"
+        noisy_wavs_dir: "noisy"
+    trainval_data_root: # "/voicebank-demand/"
+    train_data_file_path: "datasets/splits/voicebank-demand_split/train.scp"
+    val_data_file_path: "datasets/splits/voicebank-demand_split/test.scp"
+    inference_data_root: # "/voicebank-demand/"
+    inference_data_file_path: "datasets/splits/voicebank-demand_split/test.scp"
+    train_batch_size: 32
+    workers: 16
+
+train:
+    trainer: hifi++_trainer
+    val_metrics: ["wb_pesq", "stoi", "si_sdr", "mosnet"]
+    start_step: 1
+    steps: 80000
+    log_step: 250
+    checkpoint_step: 10000
+    val_step: 500
+
+inference:
+    trainer: hifi++_trainer
+    metrics: ["wb_pesq", "stoi", "si_sdr", "mosnet"]
+
+default_model:
+    optimizer:
+        name: adamW
+        args:
+            lr: 0.0002
+            beta1: 0.8
+            beta2: 0.99
+
+    scheduler:
+        name: exponential
+        args:
+            gamma: 0.999
+            reduce_time: "epoch"
+
+models:
+    a2a_hifi++_gen:
+        inherit: default_model
+        checkpoint_path: null
+        args: {}
+        losses:
+            l1_mel_loss:
+                coef: 45.0
+            gen_loss:
+                coef: 1.0
+            feature_loss:
+                coef: 2.0   
+    
+    msd:
+        inherit: default_model
+        checkpoint_path: null
+        args:
+            same_scale: true
+        losses:
+            disc_loss:
+                coef: 1.0

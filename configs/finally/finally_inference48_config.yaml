@@ -1,0 +1,49 @@
+exp:
+    project_name: FINALLY
+    exp_dir: experiment
+    device: cuda:1
+    seed: 1234
+
+mel:
+    segment_size: 24576
+    num_mels: 80
+    n_fft: 1024
+    hop_size: 256
+    win_size: 1024
+    in_sr: 16000
+    out_sr: 48000
+    fmin: 0
+    fmax: 8000
+    fmax_for_loss: null
+
+data:
+    dataset: vctk-demand
+    dataset_args:
+        clean_wavs_dir: "clean_testset_wav"
+        noisy_wavs_dir: "noisy_testset_wav"
+    inference_data_root: datasets/VCTK-Demand/ # vctk-demand dataset root directory
+    inference_data_file_path: "datasets/metadata/VCTK-Demand/files.txt"
+    workers: 1
+    train_batch_size: 32
+
+# data:
+#     dataset: vctk-demand
+#     dataset_args:
+#         clean_wavs_dir: small_train_data
+#         noisy_wavs_dir: small_train_data
+#     inference_data_root: ../../Data/Data_48K/
+#     inference_data_file_path: "../../Data/Data_48K/small_train_data_filenames.txt"
+#     workers: 1
+#     train_batch_size: 32
+
+inference:
+    save_samples: true
+    trainer: finally_trainer
+    metrics: []
+
+models:
+    finally_gen:
+        checkpoint_path: experiment/checkpoints/stage3_norm/finally_gen/finally_gen_checkpoint_28000_stage3_norm.pth
+        args:
+          use_upsamplewaveunet: true
+    

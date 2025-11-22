@@ -2,7 +2,7 @@
 
 ### Introduction
 
-The repository is the unofficial implementation of the **FINALLY** speech enhancement model, designed to improve audio quality to **studio-like standards**. It provides fast and universal enhancement across a variety of speech recordings.
+The repository is the unofficial implementation of the **FINALLY** speech enhancement model, designed to improve audio quality to **studio-like standards**. It provides fast and universal speech enhancement across a variety of speech recordings.
 
 ### Paper
 
@@ -27,7 +27,18 @@ pip install -r requirements.txt
 
 ### Pretrained Models
 
-Download the **WavLM-Large** model from [Hugging Face](https://huggingface.co/microsoft/wavlm-large) and place it in the `wavlm/` directory.
+The model uses **WavLM-Large** from [Hugging Face](https://huggingface.co/microsoft/wavlm-large) as a frozen feature extractor.
+
+- Automatically downloaded via `transformers` when training starts:
+```python
+from transformers import WavLMModel
+
+wavlm = WavLMModel.from_pretrained(
+    "microsoft/wavlm-large",
+    output_hidden_states=True,
+    force_download=bool(os.getenv("FORCE", False))
+)
+```
 
 ### Model Size
 
@@ -48,53 +59,65 @@ Trainable parameters per component (in millions):
 - **Total number of parameters (including WavLM):** 363.5 M  
 
 
-### Data
+### Data Processing
 
-The `data/` directory contains some dummy audio data for testing and training.
+Data handling and preprocessing are implemented in the `datasets/` directory, which includes:
 
-#### Stage 1
+- `datasets.py` – definitions for dataset structures and preprocessing
+- `dataloaders.py` – PyTorch dataloaders for training and validation
+- `augmentations.py` – audio augmentation utilities
 
-`data/stage_1/` contains:
-
-- `clean/` – 18 audio files, 2 seconds each at 16 kHz  
-- `noisy/` – 18 audio files, 2 seconds each at 16 kHz  
-- `training.txt` – lists the filenames of the audio files  
-
-The clean and noisy directories have **matching filenames**.
-
-#### Stage 2
-
-`data/stage_2/` contains the **same structure and data** as `stage_1`.
-
-#### Stage 3
-
-`data/stage_3/` contains:
-
-- `noisy/` – 18 audio files, 2 seconds each at 16 kHz  
-- `clean/` – 18 audio files, 48 kHz  
-- `training.txt` – lists the filenames of the audio files 
-
+**Note:** Your datasets should be placed inside the `datasets/` directory.  
+For more clarity about dataset structure and correct directory paths, refer to the config files and `datasets.py`.
 
 ### Training
 
-To train the model on your dataset:
+To train the model on your dataset, provide a config file and run name. Example:
 
 ```bash
-python train.py
+python train.py exp.config_path=configs/finally/finally_stage3_config.yaml \
+                exp.run_name=stage3_train
 ```
+
+Optionally, you can specify the device e.g. `exp.device=cuda:0`.
 
 ### Inference
 
-To enhance speech from input audio files:
+To enhance speech from input audio files, provide the config and run name. Example:
 
 ```bash
-python inference.py --input_wavs_dir data/test_data \
-                    --output_dir data/inferred_data \
-                    --checkpoint_file outputs/g_00000250
+python inference.py exp.config_path=configs/finally_inference48_config.yaml exp.run_name=stage3_inference_40K_steps_VCTK-demand
 ```
 
-### Notes
+### Evaluation Scores
 
-* Ensure the `checkpoint_file` exists before running inference.
-* Recommended input formats: WAV files sampled at 16kHz.
+Our model was trained on both the datasets mentioned in the paper and additional high-quality datasets curated by us.
+
+The table below compares the performance of the model using various metrics.
+
+| Metric       | Paper’s Score | Ours Score |
+|--------------|---------------|------------|
+| UTMOS        | 4.32          | 4.30       |
+| WV-MOS       | 4.87          | 4.62       |
+| DNSMOS       | 3.22          | 3.30       |
+| PESQ         | 2.94          | 3.22       |
+| STOI         | 0.92          | 0.95       |
+| SDR          | 4.6           | 6.79       |
+
+
+### Current Challenges
+
+We observed a trade-off when using feature matching loss (extracted from WavLM) in LMOS:
+
+- **Without feature matching loss:**  
+  - UTMOS and PESQ scores are lower  
+  - Perceptual output quality is better  
+
+- **With feature matching loss:**  
+  - UTMOS and PESQ scores improve  
+  - Perceptual output quality is slightly compromised  
+  - Integration introduces artifacts, which can lead to additional noise  
+
+Balancing quantitative metrics and perceptual quality remains an ongoing challenge.
+
 

@@ -1,0 +1,146 @@
+exp:
+    project_name: FINALLY
+    exp_dir: experiment
+    device: cuda:0
+    seed: 1234
+    
+mel:
+    segment_size: 8192
+    num_mels: 80
+    n_fft: 1024
+    hop_size: 256
+    win_size: 1024
+    in_sr: 16000
+    out_sr: 16000
+    fmin: 0
+    fmax: 8000
+    fmax_for_loss: null
+
+data:
+    train_dataset: augmented_libritts-r
+    train_dataset_args:
+        silence_ratio: 0.0
+        augs_conf:
+
+          - name: impulse_response
+            args:
+              root: datasets/micro_ir # micro impulse responses dataset root directory
+              ir_files_path:
+                train: "datasets/metadata/micro_ir/train_files.txt"
+                val: "datasets/metadata/micro_ir/val_files.txt"
+
+          - name: impulse_response
+            args:
+              root:  datasets/DNS_ir/datasets_fullband/impulse_responses/SLR26/simulated_rirs_48k # dns room impulse responses dataset root directory
+              ir_files_path:
+                train: "datasets/metadata/DNS_ir/train_files.txt"
+                val: "datasets/metadata/DNS_ir/val_files.txt"
+              prob: 0.8
+
+          - name: noise
+            args:
+              root: datasets/DNS_noise/datasets_fullband/noise_fullband # dns noise dataset root directory
+              noise_files_path:
+                train: "datasets/metadata/DNS_noise/train_files.txt"
+                val: "datasets/metadata/DNS_noise/val_files.txt"
+
+          - name: noise
+            args:
+              root: datasets/wind_noise # wind noise dataset root directory
+              noise_files_path:
+                train: "datasets/metadata/wind_noise/wind_noise_train_list.txt"
+                val: "datasets/metadata/wind_noise/wind_noise_val_list.txt"
+              prob: 0.50
+
+
+          - name: acrusher
+            args:
+              prob: 0.25
+
+          - name: crystalizer
+            args:
+              prob: 0.4
+
+          - name: vibrato
+            args:
+              prob: 0.15
+
+          - name: flanger
+            args:
+              prob: 0.15
+
+          - name: codec
+            args:
+              prob: 0.45
+
+          # - name: clipping
+          #   args:
+          #     prob: 0.40
+
+          # - name: packet_loss
+          #   args:
+          #     prob: 0.35
+
+    # train_data_root: datasets/LibriTTS-R/LibriTTS_R # LibriTTS-R dataset root directory
+    # train_data_file_path: "datasets/metadata/LibriTTS-R/train_files.txt"
+
+    # 200H Data
+    # train_data_root: ../../Data/urgent_clean_data_melband # daps dataset root directory
+    # train_data_file_path: "/home/ml/Data/urgent_clean_data_melband/urgent_clean_stage1_filenames.txt"
+
+    # Urgent 2500 hour data
+    train_data_root: /mnt/Tashin/Home/Abtahi_New_Folder # daps dataset root directory 
+    train_data_file_path: "/mnt/Tashin/Home/Abtahi_New_Folder/filenames.txt"
+
+    
+    val_dataset: vctk-demand
+    val_dataset_args:
+        clean_wavs_dir: "clean_testset_wav"
+        noisy_wavs_dir: "noisy_testset_wav"
+    val_data_root: datasets/VCTK-Demand # vctk-demand dataset root directory
+    val_data_file_path: "datasets/metadata/VCTK-Demand/files.txt"
+
+    train_batch_size: 32
+    workers: 20
+
+    # val_dataset: vctk-demand
+    # val_dataset_args:
+    #     clean_wavs_dir: "clean"
+    #     noisy_wavs_dir: "noisy"
+    # val_data_root: datasets/Urgent25_nonblind # vctk-demand dataset root directory
+    # val_data_file_path: "datasets/Urgent25_nonblind/filenames.txt"
+
+    # train_batch_size: 32
+    # workers: 8
+
+train:
+    trainer: finally_pretrainer
+    val_metrics: []
+    start_step: 95001
+    steps: 1000000
+    log_step: 5000
+    checkpoint_step: 5000
+    val_step: 5000
+
+models:
+    finally_gen:
+        optimizer:
+          name: adamW
+          args:
+              lr: 0.0002
+              beta1: 0.8
+              beta2: 0.99
+
+        scheduler:
+            name: exponential
+            args:
+                gamma: 0.996
+                reduce_time: "period"
+                step_period: 1000
+
+        checkpoint_path: experiment/checkpoints/stage1_2500H_urgent_data_clean/finally_gen/finally_gen_checkpoint_95000_stage1_2500H_urgent_data_clean.pth
+        args: {}
+        losses:
+            lmos:
+              coef: 1.0
+  
