@@ -57,16 +57,16 @@ Below, we present a side-by-side comparison of spectrograms and audio. The left 
 <div style="display:flex; gap: 40px; align-items: flex-start;">
   <div>
     <h4>Input</h4>
-    <img src="assets/img/input_spec.png" alt="Input Spectrogram" width="500" height="300" style="object-fit: contain;">
+    <img src="assets/img/input/p232_028.png" alt="Input Spectrogram" width="500" height="300" style="object-fit: contain;">
     <audio controls style="width: 100%;">
-      <source src="assets/audio/input.wav" type="audio/wav">
+      <source src="assets/audio/input/p232_028.wav" type="audio/wav">
     </audio>
   </div>
   <div>
     <h4>Enhanced</h4>
-    <img src="assets/img/output_spec.png" alt="Output Spectrogram" width="500" height="300" style="object-fit: contain;">
+    <img src="assets/img/enhanced/p232_028.png" alt="Output Spectrogram" width="500" height="300" style="object-fit: contain;">
     <audio controls style="width: 100%;">
-      <source src="assets/audio/enhanced.wav" type="audio/wav">
+      <source src="assets/audio/enhanced/p232_028.wav" type="audio/wav">
     </audio>
   </div>
 </div>
@@ -76,16 +76,16 @@ Below, we present a side-by-side comparison of spectrograms and audio. The left 
 <div style="display:flex; gap: 40px; align-items: flex-start;">
   <div>
     <h4>Input</h4>
-    <img src="assets/img/input_spec.png" alt="Input Spectrogram" width="500" height="300" style="object-fit: contain;">
+    <img src="assets/img/input/p232_033.png" alt="Input Spectrogram" width="500" height="300" style="object-fit: contain;">
     <audio controls style="width: 100%;">
-      <source src="assets/audio/input.wav" type="audio/wav">
+      <source src="assets/audio/input/p232_033.wav" type="audio/wav">
     </audio>
   </div>
   <div>
     <h4>Enhanced</h4>
-    <img src="assets/img/output_spec.png" alt="Output Spectrogram" width="500" height="300" style="object-fit: contain;">
+    <img src="assets/img/enhanced/p232_033.png" alt="Output Spectrogram" width="500" height="300" style="object-fit: contain;">
     <audio controls style="width: 100%;">
-      <source src="assets/audio/enhanced.wav" type="audio/wav">
+      <source src="assets/audio/enhanced/p232_033.wav" type="audio/wav">
     </audio>
   </div>
 </div>
@@ -95,16 +95,16 @@ Below, we present a side-by-side comparison of spectrograms and audio. The left 
 <div style="display:flex; gap: 40px; align-items: flex-start;">
   <div>
     <h4>Input</h4>
-    <img src="assets/img/input_spec.png" alt="Input Spectrogram" width="500" height="300" style="object-fit: contain;">
+    <img src="assets/img/input/p232_045.png" alt="Input Spectrogram" width="500" height="300" style="object-fit: contain;">
     <audio controls style="width: 100%;">
-      <source src="assets/audio/input.wav" type="audio/wav">
+      <source src="assets/audio/input/p232_045.wav" type="audio/wav">
     </audio>
   </div>
   <div>
     <h4>Enhanced</h4>
-    <img src="assets/img/output_spec.png" alt="Output Spectrogram" width="500" height="300" style="object-fit: contain;">
+    <img src="assets/img/enhanced/p232_045.png" alt="Output Spectrogram" width="500" height="300" style="object-fit: contain;">
     <audio controls style="width: 100%;">
-      <source src="assets/audio/enhanced.wav" type="audio/wav">
+      <source src="assets/audio/enhanced/p232_045.wav" type="audio/wav">
     </audio>
   </div>
 </div>
@@ -114,16 +114,16 @@ Below, we present a side-by-side comparison of spectrograms and audio. The left 
 <div style="display:flex; gap: 40px; align-items: flex-start;">
   <div>
     <h4>Input</h4>
-    <img src="assets/img/input_spec.png" alt="Input Spectrogram" width="500" height="300" style="object-fit: contain;">
+    <img src="assets/img/input/urgent_2025.png" alt="Input Spectrogram" width="500" height="300" style="object-fit: contain;">
     <audio controls style="width: 100%;">
-      <source src="assets/audio/input.wav" type="audio/wav">
+      <source src="assets/audio/input/urgent_2025.wav" type="audio/wav">
     </audio>
   </div>
   <div>
     <h4>Enhanced</h4>
-    <img src="assets/img/output_spec.png" alt="Output Spectrogram" width="500" height="300" style="object-fit: contain;">
+    <img src="assets/img/enhanced/urgent_2025.png" alt="Output Spectrogram" width="500" height="300" style="object-fit: contain;">
     <audio controls style="width: 100%;">
-      <source src="assets/audio/enhanced.wav" type="audio/wav">
+      <source src="assets/audio/enhanced/urgent_2025.wav" type="audio/wav">
     </audio>
   </div>
 </div>
@@ -169,9 +169,11 @@ document.getElementById("toggleAudio").addEventListener("click", () => {
 </script> -->
 
 
+## Challenges
 
-## 6. Challenges
+Integrating WavLM as a feature extractor introduces minor artifacts in the enhanced speech. Without WavLM features, certain phonemes are altered by the model, which can affect speech intelligibility.
 
-Despite strong results, several challenges remain. Incorporating feature matching loss from WavLM presents a trade-off. Without it, UTMOS and PESQ scores tend to be lower, but perceptual quality appears better. With feature matching loss, objective scores improve, yet minor artifacts may appear, slightly reducing perceptual quality. Balancing quantitative metrics with perceptual quality continues to be an active area of development.
+Incorporating UTMOS and PESQ losses improves the corresponding objective scores, but perceptual quality is slightly compromised. When these losses are not applied, perceptual quality is better, though the objective scores decrease. Balancing quantitative metrics with perceptual listening quality remains a critical challenge in optimizing the model.
 
-It is important to note that reference-based metrics often show low correlation with human perception, whereas no-reference metrics tend to better reflect subjective listening quality. Optimizing for metrics alone can sometimes compromise the listening experience, highlighting the need for careful evaluation across multiple dimensions.
+It is important to note that reference-based metrics often show limited correlation with human perception, whereas no-reference metrics more accurately reflect subjective listening quality. Optimizing solely for objective metrics can sometimes degrade the listening experience, emphasizing the need for careful evaluation across multiple dimensions.
+
