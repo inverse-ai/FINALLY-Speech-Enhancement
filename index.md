@@ -57,14 +57,14 @@ Below, we present a side-by-side comparison of spectrograms and audio. The left 
 <div style="display:flex; gap: 40px; align-items: flex-start;">
   <div>
     <h4>Input</h4>
-    <img src="assets/img/input_spec.png" alt="Input Spectrogram" width="400" height="200" style="object-fit: contain;">
+    <img src="assets/img/input_spec.png" alt="Input Spectrogram" width="500" height="300" style="object-fit: contain;">
     <audio controls style="width: 100%;">
       <source src="assets/audio/input.wav" type="audio/wav">
     </audio>
   </div>
   <div>
     <h4>Enhanced</h4>
-    <img src="assets/img/output_spec.png" alt="Output Spectrogram" width="400" height="200" style="object-fit: contain;">
+    <img src="assets/img/output_spec.png" alt="Output Spectrogram" width="500" height="300" style="object-fit: contain;">
     <audio controls style="width: 100%;">
       <source src="assets/audio/enhanced.wav" type="audio/wav">
     </audio>
@@ -76,14 +76,14 @@ Below, we present a side-by-side comparison of spectrograms and audio. The left 
 <div style="display:flex; gap: 40px; align-items: flex-start;">
   <div>
     <h4>Input</h4>
-    <img src="assets/img/input_spec.png" alt="Input Spectrogram" width="400" height="200" style="object-fit: contain;">
+    <img src="assets/img/input_spec.png" alt="Input Spectrogram" width="500" height="300" style="object-fit: contain;">
     <audio controls style="width: 100%;">
       <source src="assets/audio/input.wav" type="audio/wav">
     </audio>
   </div>
   <div>
     <h4>Enhanced</h4>
-    <img src="assets/img/output_spec.png" alt="Output Spectrogram" width="400" height="200" style="object-fit: contain;">
+    <img src="assets/img/output_spec.png" alt="Output Spectrogram" width="500" height="300" style="object-fit: contain;">
     <audio controls style="width: 100%;">
       <source src="assets/audio/enhanced.wav" type="audio/wav">
     </audio>
@@ -95,14 +95,14 @@ Below, we present a side-by-side comparison of spectrograms and audio. The left 
 <div style="display:flex; gap: 40px; align-items: flex-start;">
   <div>
     <h4>Input</h4>
-    <img src="assets/img/input_spec.png" alt="Input Spectrogram" width="400" height="200" style="object-fit: contain;">
+    <img src="assets/img/input_spec.png" alt="Input Spectrogram" width="500" height="300" style="object-fit: contain;">
     <audio controls style="width: 100%;">
       <source src="assets/audio/input.wav" type="audio/wav">
     </audio>
   </div>
   <div>
     <h4>Enhanced</h4>
-    <img src="assets/img/output_spec.png" alt="Output Spectrogram" width="400" height="200" style="object-fit: contain;">
+    <img src="assets/img/output_spec.png" alt="Output Spectrogram" width="500" height="300" style="object-fit: contain;">
     <audio controls style="width: 100%;">
       <source src="assets/audio/enhanced.wav" type="audio/wav">
     </audio>
@@ -114,14 +114,14 @@ Below, we present a side-by-side comparison of spectrograms and audio. The left 
 <div style="display:flex; gap: 40px; align-items: flex-start;">
   <div>
     <h4>Input</h4>
-    <img src="assets/img/input_spec.png" alt="Input Spectrogram" width="400" height="200" style="object-fit: contain;">
+    <img src="assets/img/input_spec.png" alt="Input Spectrogram" width="500" height="300" style="object-fit: contain;">
     <audio controls style="width: 100%;">
       <source src="assets/audio/input.wav" type="audio/wav">
     </audio>
   </div>
   <div>
     <h4>Enhanced</h4>
-    <img src="assets/img/output_spec.png" alt="Output Spectrogram" width="400" height="200" style="object-fit: contain;">
+    <img src="assets/img/output_spec.png" alt="Output Spectrogram" width="500" height="300" style="object-fit: contain;">
     <audio controls style="width: 100%;">
       <source src="assets/audio/enhanced.wav" type="audio/wav">
     </audio>
@@ -129,7 +129,7 @@ Below, we present a side-by-side comparison of spectrograms and audio. The left 
 </div>
 
 
-We also applied FINALLY to real-world recordings, such as public YouTube videos, and observed noticeable improvements in clarity and intelligibility.
+<!-- We also applied FINALLY to real-world recordings, such as public YouTube videos, and observed noticeable improvements in clarity and intelligibility.
 
 <h4>Video Demo</h4>
 <video id="demoVideo" width="640" controls>
@@ -166,7 +166,7 @@ document.getElementById("toggleAudio").addEventListener("click", () => {
   // Play if it was playing
   if (!isPaused) video.play();
 });
-</script>
+</script> -->
 
 
 
