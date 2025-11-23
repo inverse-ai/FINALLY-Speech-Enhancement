@@ -22,33 +22,55 @@ The paper’s analysis indicated that features derived from either the convoluti
 
 We evaluated FINALLY on the VCTK-Demand dataset. The model achieved improvements across multiple metrics, including UTMOS, DNSMOS, PESQ, STOI, and SDR. While the WV-MOS score was slightly lower than reported in the paper, the overall results demonstrate the model’s robustness in realistic conditions.
 
-| Metric | Paper’s Score | Our Score |
-| ------ | ------------- | --------- |
-| UTMOS  | 4.32          | 4.30      |
-| WV-MOS | 4.87          | 4.62      |
-| DNSMOS | 3.22          | 3.30      |
-| PESQ   | 2.94          | 3.22      |
-| STOI   | 0.92          | 0.95      |
-| SDR    | 4.6           | 6.79      |
+<table>
+  <tr>
+    <th>Metric</th>
+    <td>UTMOS</td>
+    <td>WV-MOS</td>
+    <td>DNSMOS</td>
+    <td>PESQ</td>
+    <td>STOI</td>
+    <td>SDR</td>
+  </tr>
+  <tr>
+    <th>Paper’s Score</th>
+    <td>4.32</td>
+    <td>4.87</td>
+    <td>3.22</td>
+    <td>2.94</td>
+    <td>0.92</td>
+    <td>4.6</td>
+  </tr>
+  <tr>
+    <th>Our Score</th>
+    <td>4.30</td>
+    <td>4.62</td>
+    <td>3.30</td>
+    <td>3.22</td>
+    <td>0.95</td>
+    <td>6.79</td>
+  </tr>
+</table>
 
 Below, we present a side-by-side comparison of spectrograms and audio. The left column shows the input speech, while the right column shows the enhanced output.
 
 <div style="display:flex; gap: 40px; align-items: flex-start;">
   <div>
     <h4>Input</h4>
-    <img src="assets/img/input_spec.png" alt="Input Spectrogram" width="400" height="200">
+    <img src="assets/img/input_spec.png" alt="Input Spectrogram" width="400" height="200" style="object-fit: contain;">
     <audio controls style="width: 100%;">
       <source src="assets/audio/input.wav" type="audio/wav">
     </audio>
   </div>
   <div>
     <h4>Enhanced</h4>
-    <img src="assets/img/output_spec.png" alt="Output Spectrogram" width="400" height="200">
+    <img src="assets/img/output_spec.png" alt="Output Spectrogram" width="400" height="200" style="object-fit: contain;">
     <audio controls style="width: 100%;">
       <source src="assets/audio/enhanced.wav" type="audio/wav">
     </audio>
   </div>
 </div>
+
 
 We also applied FINALLY to real-world recordings, such as public YouTube videos, and observed noticeable improvements in clarity and intelligibility.
 
