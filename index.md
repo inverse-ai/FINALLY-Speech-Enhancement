@@ -74,6 +74,45 @@ Below, we present a side-by-side comparison of spectrograms and audio. The left 
 
 We also applied FINALLY to real-world recordings, such as public YouTube videos, and observed noticeable improvements in clarity and intelligibility.
 
+<h4>Video Demo</h4>
+<video id="demoVideo" width="640" controls>
+  <source src="assets/video/original.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+<br>
+<button id="toggleAudio">Switch to Enhanced Audio</button>
+
+<script>
+const video = document.getElementById("demoVideo");
+video.volume = 1.0; // Ensure volume is on
+let showingOriginal = true;
+
+document.getElementById("toggleAudio").addEventListener("click", () => {
+  const currentTime = video.currentTime;
+  const isPaused = video.paused;
+
+  // Swap video source
+  video.src = showingOriginal 
+    ? "assets/video/enhanced.mp4" 
+    : "assets/video/original.mp4";
+
+  // Keep playback position
+  video.currentTime = currentTime;
+
+  // Update button text
+  document.getElementById("toggleAudio").innerText = showingOriginal 
+    ? "Switch to Original Audio" 
+    : "Switch to Enhanced Audio";
+
+  showingOriginal = !showingOriginal;
+
+  // Play if it was playing
+  if (!isPaused) video.play();
+});
+</script>
+
+
+
 ## 6. Challenges
 
 Despite strong results, several challenges remain. Incorporating feature matching loss from WavLM presents a trade-off. Without it, UTMOS and PESQ scores tend to be lower, but perceptual quality appears better. With feature matching loss, objective scores improve, yet minor artifacts may appear, slightly reducing perceptual quality. Balancing quantitative metrics with perceptual quality continues to be an active area of development.
