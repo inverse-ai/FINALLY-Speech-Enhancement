@@ -1,9 +1,3 @@
-Here’s a full `index.md` content for your GitHub Pages site (ready to save as `index.md` in `gh-pages`):
-
----
-
----
-
 ## title: My Speech Enhancement Model
 
 # My Speech Enhancement Model
