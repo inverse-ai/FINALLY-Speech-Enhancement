@@ -2,11 +2,11 @@
 
 ### Introduction
 
-The repository is the unofficial implementation of the **FINALLY** speech enhancement model, designed to improve audio quality to **studio-like standards**. It provides fast and universal speech enhancement across a variety of speech recordings.
+**Explore details and sample results on our GitHub Pages:** [https://inverse-ai.github.io/FINALLY-Speech-Enhancement/](https://inverse-ai.github.io/FINALLY-Speech-Enhancement/), which includes comprehensive information about the **FINALLY** speech enhancement model, audio examples comparing input and enhanced speech, and spectrogram visualizations for easy comparison.
 
-### Paper
+**Try the model live** at [https://noise-reducer.com](https://noise-reducer.com) to enhance your own audio in real time.
 
-For more details, see the [FINALLY: fast and universal speech enhancement with studio-like quality](https://arxiv.org/abs/2410.05920) paper
+For architecture details, see the [FINALLY: fast and universal speech enhancement with studio-like quality](https://arxiv.org/abs/2410.05920) paper.
 
 ### Environment
 
