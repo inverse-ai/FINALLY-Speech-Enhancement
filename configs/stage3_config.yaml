@@ -1,0 +1,93 @@
+exp:
+    project_name: FINALLY
+    exp_dir: experiment
+    device: cuda:0
+    seed: 1234
+    stage: 3
+
+mel:
+    segment_size: 196608
+    num_mels: 80
+    n_fft: 1024
+    hop_size: 256
+    win_size: 1024
+    in_sr: 16000
+    out_sr: 48000
+    fmin: 0
+    fmax: 8000
+    fmax_for_loss: null
+
+data:
+    train_dataset_args: ${include:configs/dataset_augs.yaml}
+
+    train_data_root: datasets/DAPS/daps
+    train_data_file_path: datasets/metadata/DAPS/files.txt
+    
+    val_dataset_args:
+        clean_wavs_dir: clean_testset_wav
+        noisy_wavs_dir: noisy_testset_wav
+    val_data_root: datasets/VCTK-Demand
+    val_data_file_path: datasets/metadata/VCTK-Demand/files.txt
+
+    train_batch_size: 32
+    workers: 20
+
+train:
+    sub_batch_size: 1
+    val_metrics: ["utmos", "wvmos", "dnsmos", "wb_pesq", "stoi", "si_sdr"]
+    start_step: 1
+    steps: 40000
+    checkpoint_step: 500
+    val_step: 500
+
+gen:
+    optimizer:
+        args:
+            lr: 0.0002
+            beta1: 0.8
+            beta2: 0.99
+    scheduler:
+        args:
+            gamma: 0.995
+            warmup_steps: 2000
+            step_period: 200
+
+    checkpoint_path: null
+    load_optimizer_from_checkpoint: false
+
+    args:
+        use_upsamplewaveunet: true
+
+    losses:
+        wavlm_loss:
+            coef: 50
+        stft_loss:
+            coef: 0.5
+        gen_loss:
+            coef: 5
+        feature_loss:
+            coef: 15.0
+        utmos:
+            coef: 20
+        pesq:
+            coef: 2
+
+disc:
+    optimizer:
+        args:
+            lr: 0.0002
+            beta1: 0.5
+            beta2: 0.999
+
+    scheduler:
+        args:
+            gamma: 0.995
+            step_period: 200
+
+    checkpoint_path: null
+    
+    args:
+        filters: 64
+    losses:
+        disc_loss:
+            coef: 1.0

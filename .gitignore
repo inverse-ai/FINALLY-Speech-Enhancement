@@ -1,0 +1,33 @@
+# Checkpoints and models
+*.pth
+*.pt
+*.ckpt
+experiment/
+checkpoints/
+
+# Data
+*.wav
+*.mp3
+data/
+datasets/
+
+# Logs
+*.log
+logs/
+wandb/
+
+# Python
+__pycache__/
+*.py[cod]
+.Python
+venv/
+env/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# System
+.DS_Store

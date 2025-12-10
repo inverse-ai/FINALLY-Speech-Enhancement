@@ -1,0 +1,42 @@
+augs_conf:
+  - name: impulse_response
+    args:
+      root: datasets/micro_ir
+      ir_files_path:
+        train: "datasets/metadata/micro_ir/train_files.txt"
+        val: "datasets/metadata/micro_ir/val_files.txt"
+
+  - name: impulse_response
+    args:
+      root: datasets/DNS_ir/datasets_fullband/impulse_responses/SLR26/simulated_rirs_48k
+      ir_files_path:
+        train: "datasets/metadata/DNS_ir/train_files.txt"
+        val: "datasets/metadata/DNS_ir/val_files.txt"
+      prob: 0.8
+
+  - name: noise
+    args:
+      root: datasets/DNS_noise/datasets_fullband/noise_fullband
+      noise_files_path:
+        train: "datasets/metadata/DNS_noise/train_files.txt"
+        val: "datasets/metadata/DNS_noise/val_files.txt"
+
+  - name: acrusher
+    args:
+      prob: 0.25
+
+  - name: crystalizer
+    args:
+      prob: 0.4
+
+  - name: vibrato
+    args:
+      prob: 0.15
+
+  - name: flanger
+    args:
+      prob: 0.15
+
+  - name: codec
+    args:
+      prob: 0.45

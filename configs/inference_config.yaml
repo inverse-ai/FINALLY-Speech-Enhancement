@@ -1,0 +1,35 @@
+exp:
+    project_name: FINALLY
+    exp_dir: experiment
+    device: cuda:0
+    seed: 1234
+
+mel:
+    segment_size: 65536
+    num_mels: 80
+    n_fft: 1024
+    hop_size: 256
+    win_size: 1024
+    in_sr: 16000
+    fmin: 0
+    fmax: 8000
+    fmax_for_loss: null
+
+data:
+    dataset_args:
+        clean_wavs_dir: "clean_testset_wav"
+        noisy_wavs_dir: "noisy_testset_wav"
+    inference_data_root: datasets/VCTK-Demand/
+    inference_data_file_path: "datasets/metadata/VCTK-Demand/files.txt"
+    workers: 10
+    inference_batch_size: 1
+
+inference:
+    save_samples: true
+    metrics: ["utmos", "wvmos", "dnsmos", "wb_pesq", "stoi", "si_sdr"]
+
+gen:
+    checkpoint_path: /home/ml/Projects/finally-speech-enhancement/experiment/checkpoints/test_run1/gen/gen_checkpoint_1500_test_run1.pth
+    args:
+        use_upsamplewaveunet: false
+    

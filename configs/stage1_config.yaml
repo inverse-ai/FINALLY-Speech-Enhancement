@@ -1,0 +1,65 @@
+exp:
+    project_name: FINALLY
+    exp_dir: experiment
+    device: cuda:0
+    seed: 1234
+    stage: 1
+    
+mel:
+    segment_size: 65536
+    num_mels: 80
+    n_fft: 1024
+    hop_size: 256
+    win_size: 1024
+    in_sr: 16000
+    out_sr: 16000
+    fmin: 0
+    fmax: 8000
+    fmax_for_loss: null
+
+data:
+    train_dataset_args: ${include:configs/dataset_augs.yaml}
+
+    train_data_root: datasets/LibriTTS-R/LibriTTS_R
+    train_data_file_path: datasets/metadata/LibriTTS-R/train_files.txt
+
+    
+    val_dataset_args:
+        clean_wavs_dir: clean_testset_wav
+        noisy_wavs_dir: noisy_testset_wav
+    val_data_root: datasets/VCTK-Demand
+    val_data_file_path: datasets/metadata/VCTK-Demand/files.txt
+
+    train_batch_size: 32
+    workers: 20
+
+train:
+    sub_batch_size: 4
+    val_metrics: ["utmos", "wvmos", "dnsmos", "wb_pesq", "stoi", "si_sdr"]
+    start_step: 1
+    steps: 200000
+    checkpoint_step: 1000
+    val_step: 1000
+
+gen:
+    optimizer:
+      args:
+            lr: 0.0002
+            beta1: 0.8
+            beta2: 0.99
+
+    scheduler:
+        args:
+            gamma: 0.996
+            step_period: 200
+
+    checkpoint_path: null
+
+    args: {}
+
+    losses:
+        wavlm_loss:
+            coef: 100
+        stft_loss:
+            coef: 1
+  
