@@ -4,7 +4,7 @@
 
 **Explore details and sample results on our GitHub Pages:** [https://inverse-ai.github.io/FINALLY-Speech-Enhancement/](https://inverse-ai.github.io/FINALLY-Speech-Enhancement/), which includes comprehensive information about the **FINALLY** speech enhancement model, audio examples comparing input and enhanced speech, and spectrogram visualizations for easy comparison.
 
-**Try the model live** at [https://noise-reducer.com](https://noise-reducer.com) to enhance your own audio in real time.
+**Try the model live** at [https://noise-reducer.com](https://noise-reducer.com) (with **NR v5.2**) to enhance your audio.
 
 For architecture details, see the [FINALLY: fast and universal speech enhancement with studio-like quality](https://arxiv.org/abs/2410.05920) paper.
 
