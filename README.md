@@ -4,7 +4,7 @@
 
 **Explore details and sample results on our GitHub Pages:** [https://inverse-ai.github.io/FINALLY-Speech-Enhancement/](https://inverse-ai.github.io/FINALLY-Speech-Enhancement/), which includes comprehensive information about the **FINALLY** speech enhancement model, audio examples comparing input and enhanced speech, and spectrogram visualizations for easy comparison.
 
-**Try the model live** at [https://noise-reducer.com](https://noise-reducer.com) (with **NR v5.2**) to enhance your audio.
+**Try the model live** at [https://noise-reducer.com](https://noise-reducer.com) (with **NR v6.0**) to enhance your audio.
 
 For architecture details, see the [FINALLY: fast and universal speech enhancement with studio-like quality](https://arxiv.org/abs/2410.05920) paper.
 
@@ -73,14 +73,59 @@ For more clarity about dataset structure and correct directory paths, refer to t
 
 ### Training
 
-To train the model on your dataset, provide a config file and run name. Example:
+To train the model on your dataset, provide a config file and run name.
 
+#### Stage 1: Initial Training
+Train the generator only.
 ```bash
-python train.py exp.config_path=configs/stage1_config.yaml \
-                exp.run_name=stage1_train
+python train.py exp.config_path=configs/stage1_config.yaml exp.run_name=stage1
 ```
 
+- **New Training:** Set `gen:checkpoint_path: null` when starting from the beginning.
+- **Resuming:** Provide the path to the latest Stage 1 checkpoint in `gen:checkpoint_path`.
+
+#### Stage 2: Generative and Adversarial Training
+Train with a discriminator.
+```bash
+python train.py exp.config_path=configs/stage2_config.yaml exp.run_name=stage2
+```
+
+- **Setup:** Use the last checkpoint from Stage 1 for `gen:checkpoint_path`.
+- **Note:** Set `disc:checkpoint_path: null` when starting Stage 2.
+
+#### Stage 3: High Fidelity Upsampling
+Upsample result from 16kHz to 48kHz.
+```bash
+python train.py exp.config_path=configs/stage3_config.yaml exp.run_name=stage3
+```
+
+- **Setup:** Use the last checkpoint from Stage 2 for `gen:checkpoint_path`.
+- **Note:** Set `disc:checkpoint_path: null`.
+- **Configuration:** Ensure `gen:args:use_upsamplewaveunet: true` is set in the config to enable 16k to 48k upsampling.
+
 Optionally, you can specify the device e.g. `exp.device=cuda:0`.
+
+### Multi-GPU Training (DDP)
+
+We provide support for Distributed Data Parallel (DDP) training to speed up the process using multiple GPUs.
+
+#### Run with Torchrun
+To launch training on multiple GPUs (e.g., 2 GPUs), use `torchrun`:
+
+```bash
+torchrun --nproc_per_node=2 train_ddp.py \
+         exp.config_path=configs/stage3_config_ddp.yaml \
+         exp.run_name=stage3_ddp
+```
+
+#### Key DDP Configuration Changes
+When using DDP (see `configs/stage3_config_ddp.yaml`), pay attention to these parameters:
+
+- **Batch Size:** `data.train_batch_size` is the batch size **per GPU**.
+- **Effective Batch Size:** `train.effective_batch_size` is the total batch size across all GPUs and accumulation steps.
+- **Auto-accumulation:** The trainer automatically calculates the required gradient accumulation steps based on the world size and target effective batch size.
+
+Relevant files: `train_ddp.py`, `trainers/finally_trainer_ddp.py`, and `configs/*_ddp.yaml`.
 
 ### Inference
 
@@ -108,37 +153,16 @@ The table below compares the performance of the model using various metrics.
 
 ### Current Challenges
 
-During our implementation of the FINALLY speech enhancement model, we have encountered several technical challenges related to the WavLM-based perceptual loss component of the LMOS regression loss.
+During our implementation of the FINALLY speech enhancement model, we have identified several areas for improvement:
 
-#### Challenge 1: Artifacts with Full Feature Projection Pipeline
-When extracting WavLM features using the complete feature projection pipeline (including LayerNorm, Linear projection, and Dropout layers), we observe significant artifacts in the output spectrograms during inference. 
+#### Challenge 1: Stationary Noise in Silence
+A tiny amount of stationary noise remains in the enhanced audio, which is particularly audible at high volume during silence sections.
 
-**Observations:**
-- WavLM convolutional feature loss: ~0.00003–0.00005
-- STFT loss: ~0.3–0.4
-- With the paper's suggested loss weights (100× for WavLM features, 1× for STFT) [1], the WavLM component dominates the total loss
-- This imbalance appears to over-constrain the model, resulting in audible artifacts and spectral distortions
+#### Challenge 2: Accent Alteration with UTMOS Loss
+When integrating UTMOS (Unitary Training for MOS) loss, we observe that the speaker's accent occasionally changes in low SNR (Signal-to-Noise Ratio) portions. Interestingly, the accent remains preserved when training without UTMOS loss, suggesting a trade-off between perceived quality scores and speaker identity preservation.
 
-#### Challenge 2: Phoneme Alterations with Simplified Feature Extraction
-To mitigate the artifact issue, we attempted using only the convolutional encoder layers without the feature projection components. While this approach successfully eliminates artifacts from the output spectrograms, it introduces a new problem:
-
-**Observations:**
-- Output spectrograms are clean and artifact-free
-- However, phoneme preservation is compromised in some cases
-- The model occasionally generates different phonemes than those present in the input speech
-- This suggests insufficient linguistic constraint from the simplified feature space
-
-#### Challenge 3: Artifacts with First Transformer Layer Features
-As an alternative approach, we experimented with extracting features from the first transformer layer instead of the convolutional encoder, as the paper mentions both layers showed promising results [1].
-
-**Observations:**
-- Similar artifact patterns emerge as in Challenge 1
-- The transformer layer features appear to over-constrain the model in a manner similar to the full feature projection pipeline
-
-<!-- #### Open Questions
-1. **Optimal Feature Extraction Strategy:** What is the most effective layer or combination of layers from WavLM for perceptual loss in speech enhancement?
-2. **Loss Weight Balancing:** Should the 100:1 ratio between WavLM and STFT loss be adjusted for different feature extraction strategies?
-3. **Feature Space Analysis:** How can we better understand the feature space structure to prevent both artifacts and phoneme alterations? -->
+#### Challenge 3: Voice Identity Shifts in Low-Intelligibility Speech
+The model sometimes exhibits voice identity shifts (the voice sounds like a different person) when the input speech is extremely quiet or masked by heavy noise to the point of being nearly unintelligible.
 
 ### Contributing
 We invite the research community to help resolve these challenges, or alternative approaches to address these issues. If you have experience with:
@@ -149,6 +173,6 @@ We invite the research community to help resolve these challenges, or alternativ
 Please feel free to:
 - Open an issue to discuss potential solutions
 - Submit a pull request with experimental results
-- Share relevant research papers or techniques
+- Share relevant research papers or approaches
 
 Your insights and contributions could help improve the quality and robustness of this implementation.
