@@ -17,12 +17,12 @@ with open(log_file, "r") as f:
     log_data = f.read()
 
 # Extract values
-utmos = [float(x) for x in re.findall(r"val_utmos:\s*([\d.]+)", log_data)]
-wv_mos = [float(x) for x in re.findall(r"val_wvmos:\s*([\d.]+)", log_data)]
-dnsmos = [float(x) for x in re.findall(r"val_dnsmos:\s*([\d.]+)", log_data)]
-p808_mos = [float(x) for x in re.findall(r"val_P808_mos:\s*([\d.]+)", log_data)]
+utmos = [float(x) for x in re.findall(r"val_utmos:\s*(-?[\d.]+)", log_data)]
+wv_mos = [float(x) for x in re.findall(r"val_wvmos:\s*(-?[\d.]+)", log_data)]
+dnsmos = [float(x) for x in re.findall(r"val_dnsmos:\s*(-?[\d.]+)", log_data)]
+p808_mos = [float(x) for x in re.findall(r"val_P808_mos:\s*(-?[\d.]+)", log_data)]
 wb_pesq = [float(x) for x in re.findall(r"val_wb_pesq:\s*(-?[\d.]+)", log_data)]
-stoi = [float(x) for x in re.findall(r"val_stoi:\s*([\d.]+)", log_data)]
+stoi = [float(x) for x in re.findall(r"val_stoi:\s*(-?[\d.]+)", log_data)]
 
 # X-axis steps using validation step
 steps = [val_step * (i + 1) for i in range(len(utmos))]

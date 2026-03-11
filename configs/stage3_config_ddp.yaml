@@ -1,7 +1,10 @@
+# DDP Training Configuration for Stage 3
+# Launch with: torchrun --nproc_per_node=2 train_ddp.py exp.config_path=configs/stage3_config_ddp.yaml
+
 exp:
     project_name: FINALLY
     exp_dir: experiment
-    device: cuda:0
+    device: cuda:0  # Will be overridden by DDP launcher based on LOCAL_RANK
     seed: 1234
     stage: 3
 
@@ -20,23 +23,26 @@ mel:
 data:
     train_dataset_args: ${include:configs/dataset_augs.yaml}
 
-    train_data_root: /home/ml/SE/FINALLY-Speech-Enhancement/datasets/DAPS/daps
-    train_data_file_path: /home/ml/SE/FINALLY-Speech-Enhancement/datasets/metadata/DAPS/files.txt
+    train_data_root: /mnt/SadaHati/Home/SE/FINALLY-Speech-Enhancement/datasets/DAPS/daps
+    train_data_file_path: /mnt/SadaHati/Home/SE/FINALLY-Speech-Enhancement/datasets/metadata/DAPS/files.txt
 
-    
     val_dataset_args:
         clean_wavs_dir: clean
         noisy_wavs_dir: noisy
-    val_data_root: /home/ml/SE/FINALLY-Speech-Enhancement/datasets/VCTK-Demand
-    val_data_file_path: /home/ml/SE/FINALLY-Speech-Enhancement/datasets/metadata/VCTK-Demand/files.txt
+    val_data_root: /mnt/SadaHati/Home/SE/FINALLY-Speech-Enhancement/datasets/VCTK-Demand
+    val_data_file_path: /mnt/SadaHati/Home/SE/FINALLY-Speech-Enhancement/datasets/metadata/VCTK-Demand/files.txt
 
-    train_batch_size: 32
+    # DDP IMPORTANT: This is batch size PER GPU (what fits in VRAM)
+    train_batch_size: 1
     workers: 6
 
 train:
-    sub_batch_size: 1
+    # DDP: Effective batch size = train_batch_size × world_size × accum_steps
+    # With 2 GPUs: 32 = 1 × 2 × 16 accumulation steps
+    effective_batch_size: 32
+
     val_metrics: ["utmos", "wvmos", "dnsmos", "wb_pesq", "stoi", "si_sdr"]
-    start_step: 1
+    start_step: 25601
     steps: 80000
     checkpoint_step: 100
     val_step: 100
@@ -53,7 +59,7 @@ gen:
             warmup_steps: 2000
             step_period: 200
 
-    checkpoint_path: experiment/checkpoints/stage2/gen/gen_checkpoint_30000_stage2.pth
+    checkpoint_path: /mnt/SadaHati/Home/Projects/Fahim/finally-speech-enhancement/experiment/checkpoints/stage3_ddp_norm/gen/gen_checkpoint_25600_stage3_ddp_norm.pth
     load_optimizer_from_checkpoint: true
 
     args:
@@ -85,8 +91,8 @@ disc:
             gamma: 0.995
             step_period: 200
 
-    checkpoint_path: null
-    
+    checkpoint_path: /mnt/SadaHati/Home/Projects/Fahim/finally-speech-enhancement/experiment/checkpoints/stage3_ddp_norm/disc/disc_checkpoint_25600_stage3_ddp_norm.pth
+
     args:
         filters: 64
     losses:

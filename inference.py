@@ -21,6 +21,8 @@ from transformers import WavLMModel
 import numpy as np
 from scipy import stats
 from models.finally_models import FinallyGenerator
+import csv  
+import pandas as pd  
 
 class inference:
     def __init__(self, config):
@@ -94,7 +96,12 @@ class inference:
         )
         tqdm.write('Inference dataloader successfully initialized')
         
-    def _compute_metrics(self, batch, gen_batch, metrics_dict):
+    def _compute_metrics(self, batch, gen_batch, metrics_dict, per_file_metrics):
+        """
+        Modified to store both aggregate and per-file metrics
+        """
+        batch_size = len(batch['name'])
+        
         for metric_name, metric in self.metrics:
             value = metric(batch, gen_batch)
 
@@ -103,15 +110,31 @@ class inference:
                 for k, v in value.items():
                     assert isinstance(v, float), f"Metric {k} must return float, got {type(v)}"
                     key = f'inf_{k}'
+                    
+                    # Aggregate metrics
                     if key not in metrics_dict:
                         metrics_dict[key] = []
                     metrics_dict[key].append(v)
+                    
+                    # Per-file metrics (assuming batch-level metric applies to all in batch)
+                    for i, filename in enumerate(batch['name']):
+                        if filename not in per_file_metrics:
+                            per_file_metrics[filename] = {}
+                        per_file_metrics[filename][key] = v
             else:
                 assert isinstance(value, float), f"Each metric result must be float, but {metric_name} returned {type(value)}"
                 key = f'inf_{metric_name}'
+                
+                # Aggregate metrics
                 if key not in metrics_dict:
                     metrics_dict[key] = []
                 metrics_dict[key].append(value)
+                
+                # Per-file metrics
+                for i, filename in enumerate(batch['name']):
+                    if filename not in per_file_metrics:
+                        per_file_metrics[filename] = {}
+                    per_file_metrics[filename][key] = value
                 
     def _avg_computed_metrics(self, metrics_dict):
         ci_dict = {}
@@ -148,9 +171,45 @@ class inference:
                 tqdm.write(line)
                 f.write(line + "\n")
 
+    def _save_per_file_metrics_csv(self, per_file_metrics):
+        """
+        Save per-file metrics to CSV
+        """
+        log_dir = os.path.join(self.inference_out_dir, self.config.exp.run_name)
+        os.makedirs(log_dir, exist_ok=True)
+        
+        csv_file = os.path.join(log_dir, "per_file_metrics.csv")
+        
+        # Get all metric names
+        all_metrics = set()
+        for filename_metrics in per_file_metrics.values():
+            all_metrics.update(filename_metrics.keys())
+        all_metrics = sorted(list(all_metrics))
+        
+        # Write CSV
+        with open(csv_file, 'w', newline='') as f:
+            writer = csv.writer(f)
+            
+            # Header
+            header = ['filename'] + all_metrics
+            writer.writerow(header)
+            
+            # Data rows
+            for filename in sorted(per_file_metrics.keys()):
+                row = [filename]
+                for metric_name in all_metrics:
+                    value = per_file_metrics[filename].get(metric_name, 'N/A')
+                    if isinstance(value, float):
+                        row.append(f"{value:.6f}")
+                    else:
+                        row.append(value)
+                writer.writerow(row)
+        
+        tqdm.write(f"Per-file metrics saved to: {csv_file}")
+
     @torch.no_grad()
-    def apply_wavlm(self, batch):
-        wav = batch['input_wav'].to(self.device)
+    def apply_wavlm(self, wav):
+        wav = wav.squeeze(0)
         outputs = self.wavlm(input_values=wav, output_hidden_states=True)
         raw_features = outputs.last_hidden_state.permute(0, 2, 1)
         return raw_features
@@ -167,7 +226,8 @@ class inference:
         with torch.no_grad():
             for name, input_wav in zip(batch['name'], batch['input_wav']):
                 input_wav = input_wav.to(self.device)[None,None]
-                wavlm_features = self.apply_wavlm(batch)
+                input_wav = input_wav * (1.0 / ( torch.max(torch.abs(input_wav)) + 1e-8))
+                wavlm_features = self.apply_wavlm(input_wav)
                 gen_wav = gen(input_wav, wavlm_features).squeeze()
                 
                 result_dict['gen_wav'].append(gen_wav)
@@ -179,6 +239,7 @@ class inference:
     @torch.no_grad()
     def inference(self):
         metrics_dict = {}
+        per_file_metrics = {}  
 
         for batch in tqdm(self.inference_dataloader, desc=f"Inference Progress"):
             gen_batch = self.synthesize_wavs(batch)
@@ -202,12 +263,15 @@ class inference:
                 save_wavs_to_dir(gen_batch['gen_wav'], gen_batch['name'],
                                     os.path.join(run_inf_dir, 'generated'), out_sr, 'wav')
 
-            self._compute_metrics(batch, gen_batch, metrics_dict)
+            # pass per_file_metrics
+            self._compute_metrics(batch, gen_batch, metrics_dict, per_file_metrics)
         
         ci_dict = self._avg_computed_metrics(metrics_dict)
 
         tqdm.write('Inference completed:')
         self._print_metrics(metrics_dict, ci_dict)
+        
+        self._save_per_file_metrics_csv(per_file_metrics)
 
 if __name__ == "__main__":
     config = load_config()

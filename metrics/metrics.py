@@ -168,22 +168,24 @@ class STOI:
         return float(np.mean(scores).item())
 
 class SISDR:
-    def __init__(self, config):
+    def __init__(self, config, eps=1e-8):
         self.device = config.exp.device
+        self.eps = eps
 
     def __call__(self, real_batch, gen_batch) -> float:
         real_wavs = real_batch['wav'].to(self.device).squeeze(1)
         gen_wavs = gen_batch['gen_wav'].to(self.device).squeeze(1)
 
-        alpha = (gen_wavs * real_wavs).sum(
-            dim=1, keepdim=True
-        ) / real_wavs.square().sum(dim=1, keepdim=True)
+        alpha = (gen_wavs * real_wavs).sum(dim=1, keepdim=True) / (
+            real_wavs.square().sum(dim=1, keepdim=True) + self.eps
+        )
         real_wavs_scaled = alpha * real_wavs
         e_target = real_wavs_scaled.square().sum(dim=1)
-        e_res = (gen_wavs - real_wavs).square().sum(dim=1)
-        si_sdr = 10 * torch.log10(e_target / e_res).cpu().numpy()
+        e_res = (gen_wavs - real_wavs_scaled).square().sum(dim=1)
 
-        return float(np.mean(si_sdr).item())
+        si_sdr = 10 * torch.log10((e_target + self.eps) / (e_res + self.eps))
+
+        return float(si_sdr.mean().cpu().item())
     
 def get_metric(metric_name, config):
     metric_classes = {

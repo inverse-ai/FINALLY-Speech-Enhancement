@@ -41,7 +41,7 @@ class BaseTrainerHelpers:
         if checkpoint_path is not None and os.path.isfile(checkpoint_path):
             tqdm.write(f'Loading checkpoint for {model_type} from {checkpoint_path}...')
             checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=True)
-            model.load_state_dict(checkpoint['state_dict'], strict=True)
+            model.load_state_dict(checkpoint['state_dict'], strict=False)
         else:
             if checkpoint_path:
                 tqdm.write(f'Warning: Checkpoint not found at {checkpoint_path}. Initializing {model_type} from scratch.')
@@ -321,7 +321,7 @@ class BaseTrainer(BaseTrainerHelpers):
                 
                 losses_dict = self.train_step()
                 self.step_schedulers()
-                
+
                 losses_to_save = {
                     k: (v.item() if isinstance(v, torch.Tensor) else v)
                     for k, v in losses_dict.items()

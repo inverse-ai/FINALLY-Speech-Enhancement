@@ -42,8 +42,23 @@ class AugmentedDataset(Dataset):
     def _apply_augs(self, wav):
         result = wav.clone()
         orig_len = result.shape[-1]
+        
+        # --- split IR and others ---
+        ir_augs = [a for a in self.augs_conf if a['name'] == 'impulse_response']
+        other_augs = [a for a in self.augs_conf if a['name'] != 'impulse_response']
 
-        for aug in self.augs_conf:
+        # --- choose only ONE IR aug ---
+        chosen_ir_aug = random.choice(ir_augs) if ir_augs else None
+
+        # --- combine ---
+        final_augs = other_augs.copy()
+        if chosen_ir_aug is not None:
+            final_augs.append(chosen_ir_aug)
+
+        # --- shuffle ALL together ---
+        random.shuffle(final_augs)
+        
+        for aug in final_augs:
             name = aug['name']
             args = aug['args'].copy()
             try:
@@ -83,7 +98,9 @@ class TrainingDataset(AugmentedDataset):
         files_list_path,
         mel_conf,
         seed=42,
-        augs_conf=tuple()
+        augs_conf=tuple(),
+        silence_pad_prob=0.3,
+        max_silence_pad_ratio=0.7
     ):
         super().__init__(
             root=root,
@@ -93,6 +110,59 @@ class TrainingDataset(AugmentedDataset):
             augs_conf=augs_conf,
         )
         self.segment_size = mel_conf.segment_size
+        self.silence_pad_prob = silence_pad_prob
+        self.max_silence_pad_ratio = max_silence_pad_ratio
+    
+    def _add_silence_pad(self, wav):
+        """
+        Add silence padding at both ends randomly with a given probability.
+        
+        Args:
+            wav: Input waveform tensor of shape (samples,) or (channels, samples)
+        
+        Returns:
+            Waveform with silence padding (same shape as input)
+        """
+        if random.random() > self.silence_pad_prob:
+            return wav
+        
+        # Determine the original shape
+        squeeze_needed = False
+        if wav.dim() == 1:
+            wav = wav.unsqueeze(0)
+            squeeze_needed = True
+        
+        orig_len = wav.shape[-1]
+        
+        # Calculate total random silence pad length (up to max_silence_pad_ratio of original length)
+        max_pad_len = int(orig_len * self.max_silence_pad_ratio)
+        total_pad_len = random.randint(1, max_pad_len) if max_pad_len > 0 else 0
+        if random.random() > 0.7: 
+            total_pad_len = int(orig_len)
+        
+        if total_pad_len > 0:
+            # Randomly split the padding between start and end
+            start_pad_len = random.randint(0, total_pad_len)
+            end_pad_len = total_pad_len - start_pad_len
+            
+            # Calculate the length of audio to keep
+            keep_len = orig_len - total_pad_len
+            
+            # Create silence tensors
+            start_silence = torch.zeros(wav.shape[0], start_pad_len, dtype=wav.dtype, device=wav.device)
+            end_silence = torch.zeros(wav.shape[0], end_pad_len, dtype=wav.dtype, device=wav.device)
+            
+            # Trim audio and concatenate with silence
+            # Take audio from the middle portion
+            start_idx = random.randint(0, orig_len - keep_len) if orig_len > keep_len else 0
+            trimmed_wav = wav[:, start_idx:start_idx + keep_len]
+            
+            wav = torch.cat([start_silence, trimmed_wav, end_silence], dim=-1)
+        
+        if squeeze_needed:
+            wav = wav.squeeze(0)
+        
+        return wav
     
     def __getitem__(self, index):
         filename = self.files_list[index]
@@ -112,8 +182,13 @@ class TrainingDataset(AugmentedDataset):
             wav = self.resamplers[key](wav)
 
         wav = get_chunk(wav.squeeze(0), self.segment_size)
+        wav = self._add_silence_pad(wav)
 
-        augmented = self._apply_augs(wav.unsqueeze(0)).squeeze(0)
+        if random.random() > 0.97:
+            augmented = wav
+        else:
+            augmented = self._apply_augs(wav.unsqueeze(0)).squeeze(0)
+
         augmented = torch.nan_to_num(augmented)
         augmented = torch.clamp(augmented, min=-1, max=1)
             
@@ -126,7 +201,8 @@ class TrainingDataset(AugmentedDataset):
                                         resampling_method="sinc_interp_kaiser"
                                     )
             augmented = self.resamplers[key](augmented)
-
+        wav = wav * ( 1.0/ (torch.max(torch.abs(wav)) + 1e-8 ) )
+        augmented = augmented * (1.0 / (torch.max(torch.abs(augmented)) +  1e-8))
         return {
             'input_wav': augmented.squeeze(),
             'wav': wav.squeeze(),
@@ -202,7 +278,7 @@ class ValidationDataset(Dataset):
         noisy_wav = torch.clamp(noisy_wav, min=-1, max=1)
         clean_wav = torch.clamp(clean_wav, min=-1, max=1)
         
-
+        noisy_wav = noisy_wav * (1.0 / (torch.max(torch.abs(noisy_wav)) +  1e-8))
         return {
             'clean_wav_orig': clean_wav_orig.squeeze(),
             'noisy_wav_orig': noisy_wav_orig.squeeze(),

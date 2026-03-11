@@ -20,15 +20,15 @@ mel:
 data:
     train_dataset_args: ${include:configs/dataset_augs.yaml}
 
-    train_data_root: datasets/LibriTTS-R/LibriTTS_R
-    train_data_file_path: datasets/metadata/LibriTTS-R/train_files.txt
+    train_data_root: /home/ml/Data/Data_48K/
+    train_data_file_path: /home/ml/Data/Data_48K/filenames_old.txt
 
     
     val_dataset_args:
-        clean_wavs_dir: clean_testset_wav
-        noisy_wavs_dir: noisy_testset_wav
-    val_data_root: datasets/VCTK-Demand
-    val_data_file_path: datasets/metadata/VCTK-Demand/files.txt
+        clean_wavs_dir: clean
+        noisy_wavs_dir: noisy
+    val_data_root: /home/ml/SE/FINALLY-Speech-Enhancement/datasets/VCTK-Demand
+    val_data_file_path: /home/ml/SE/FINALLY-Speech-Enhancement/datasets/metadata/VCTK-Demand/files.txt
 
     train_batch_size: 32
     workers: 20
@@ -38,8 +38,8 @@ train:
     val_metrics: ["utmos", "wvmos", "dnsmos", "wb_pesq", "stoi", "si_sdr"]
     start_step: 1
     steps: 30000
-    checkpoint_step: 1000
-    val_step: 1000
+    checkpoint_step: 500
+    val_step: 500
 
 gen:
     optimizer:
@@ -54,7 +54,7 @@ gen:
             warmup_steps: 2000
             step_period: 200
 
-    checkpoint_path: null
+    checkpoint_path: experiment/checkpoints/stage1/gen/gen_checkpoint_100000_stage1.pth
     load_optimizer_from_checkpoint: false
     
     args: {}
@@ -72,7 +72,7 @@ gen:
 disc:
     optimizer:
         args:
-            lr: 0.0002111
+            lr: 0.0002
             beta1: 0.5
             beta2: 0.999
 

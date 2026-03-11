@@ -119,6 +119,7 @@ class UTMOSLoss(nn.Module):
 
         normalized = 1 + 4 * self.sigmoid(mos)
         return -normalized.mean()
+
 class PesqLoss_(PesqLoss):
     def __init__(self, factor=0.5, sample_rate=48000):
         super().__init__(factor=factor, sample_rate=sample_rate)
@@ -133,6 +134,9 @@ class PesqLoss_(PesqLoss):
             loss = super().forward(real_wav[i].squeeze(), gen_wav[i].squeeze())[0]
             pesq_loss_list.append(loss)
 
+        if len(pesq_loss_list) == 0:
+            return torch.tensor(0.0, device=real_wav.device)
+        
         pesq_loss = torch.stack(pesq_loss_list)
 
         return torch.mean(pesq_loss)

@@ -118,6 +118,10 @@ class FinallyTrainer(FinallyBaseTrainer):
             self.sub_batch_size = config.train.sub_batch_size
         else:
             self.sub_batch_size = self.batch_size
+
+        if 'disc' in config and 'n_disc_iters' in config.disc:
+            self.n_disc_iters = config.disc.n_disc_iters
+        print("Numbers of iteration of Discriminator per step: ", self.n_disc_iters)
         
         if self.batch_size and self.batch_size % self.sub_batch_size != 0:
             tqdm.write('Warning: sub_batch_size do not divide train_batch size.' \
@@ -170,6 +174,7 @@ class FinallyTrainer(FinallyBaseTrainer):
                 
                 (disc_loss / accum_steps).backward()
 
+            torch.nn.utils.clip_grad_norm_(disc.parameters(), max_norm=10.0)
             disc_optimizer.step()
             gen_losses_dict = {k: v / accum_steps for k, v in disc_losses_dict_accum.items()}
 
@@ -185,7 +190,7 @@ class FinallyTrainer(FinallyBaseTrainer):
             gen_sub = gen(input_wav[start:end], wavlm_features[start:end])
 
             disc_real_out, disc_fmaps_real = disc(real_sub)
-            disc_gen_out, disc_fmaps_gen = disc(gen_sub.detach())
+            disc_gen_out, disc_fmaps_gen = disc(gen_sub)
             
             # Concatenate all tensors along batch dimension
             all_real = torch.cat([x.view(x.size(0), -1) for x in disc_real_out], dim=1)

@@ -53,6 +53,17 @@ class RandomNoise:
         noise = self._load_noise(target_length, self.sr, rnd)
         snr = torch.tensor([rnd.uniform(*self.snr_range)])
         noisy_wav = F.add_noise(wav, noise, snr)
+        #return noise in 50% prob if wav is full 0 or null
+        rms = wav.pow(2).mean().sqrt()
+        if rms < 1e-6:  # treat as full silence
+            if rnd.random() < 0.5:  # 50% chance
+                # return pure noise scaled to same RMS range as normal augmentation
+                noise_scaled = noise * (1.0 / (torch.max(torch.abs(noise)) +  1e-8))
+                noisy_wav = noise_scaled
+            else:
+                # return silence as is
+                noisy_wav = wav.clone()
+        #saving the noisy wav
         return noisy_wav
     
 class RandomImpulseResponse:
