@@ -159,7 +159,7 @@ During our implementation of the FINALLY speech enhancement model, we have ident
 A tiny amount of stationary noise remains in the enhanced audio, which is particularly audible at high volume during silence sections.
 
 #### Challenge 2: Accent Alteration with UTMOS Loss
-When integrating UTMOS (Unitary Training for MOS) loss, we observe that the speaker's accent occasionally changes in low SNR (Signal-to-Noise Ratio) portions. Interestingly, the accent remains preserved when training without UTMOS loss, suggesting a trade-off between perceived quality scores and speaker identity preservation.
+When integrating UTMOS loss, we observe that the speaker's accent occasionally changes in low SNR (Signal-to-Noise Ratio) portions. Interestingly, the accent remains preserved when training without UTMOS loss, suggesting a trade-off between perceived quality scores and speaker identity preservation.
 
 #### Challenge 3: Voice Identity Shifts in Low-Intelligibility Speech
 The model sometimes exhibits voice identity shifts (the voice sounds like a different person) when the input speech is extremely quiet or masked by heavy noise to the point of being nearly unintelligible.
