@@ -174,6 +174,5 @@ Please feel free to:
 - **Open an issue** in the [Issues](https://github.com/inverse-ai/FINALLY-Speech-Enhancement/issues) section to discuss potential solutions, report bugs, or share feedback.
 - Submit a pull request with experimental results.
 - Share relevant research papers or approaches.
-- Reach out via email at [contact@inverse-ai.com](mailto:contact@inverse-ai.com) for direct inquiries.
 
 Your insights and contributions could help improve the quality and robustness of this implementation.
